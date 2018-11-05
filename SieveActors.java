@@ -12,10 +12,23 @@ public class SieveActors {
         ArrayList<Integer> numbers = generateNumbersTo(n);
 
         final ActorSystem sieveSystem = ActorSystem.create("SieveOFEratosthenes");
+        ActorRef[] actorRefs = new ActorRef[n];
 
         try {
             while (numbers.size() > 0) {
+                // Smallest prime
+                int p = numbers.get(0);
+
                 
+                actorRefs[p] = sieveSystem.actorOf(PrimeActor.props(numbers));
+                actorRefs[p].tell(new PrimeActor.PrimeNumber(p), ActorRef.noSender());
+
+                // Find all multiples of p within numbers and remove them
+                for (int i = 0; i < numbers.size(); i++) {
+                    if (numbers.get(i) % p == 0) {
+                        numbers.remove(numbers.get(i));
+                    }
+                }
             }
             System.out.println(">>> Press ENTER to exit <<<");
             System.in.read();
