@@ -1,62 +1,91 @@
-import akka.actor.AbstractActor;
-import akka.actor.AbstractLoggingActor;
-import akka.actor.ActorRef;
-import akka.actor.Props;
-import java.util.ArrayList;
+import akka.actor.*;
 
 /**
  * @author Joshua Chen
  *         Date: Nov 04, 2018
  */
-public class PrimeActor extends AbstractLoggingActor {
+public class PrimeActor extends AbstractActor {
 
-    static public Props props(ArrayList<Integer> numbers) {
-        return Props.create(PrimeActor.class, () -> new PrimeActor(numbers));
+    static public Props props(int currentPrime, int N, ActorRef manager) {
+        return Props.create(PrimeActor.class, () -> new PrimeActor(currentPrime, N, manager));
     }
 
-    private final ArrayList<Integer> numbers;
-    private int prime;
+    static class NewPrime {
+        public int newPrime;
 
-    public PrimeActor(ArrayList<Integer> numbers) {
-        this.numbers = numbers;
+        public NewPrime(int newPrime) {
+            this.newPrime = newPrime;
+        }
+    }
+
+    private int currentPrime;
+    private int N;
+    private ActorRef manager;
+    private ActorRef nextPrime;
+
+    public PrimeActor(int currentPrime, int N, ActorRef manager) {
+        this.currentPrime = currentPrime;
+        this.N = N;
+        this.manager = manager;
+        nextPrime = null;
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .matchEquals("", p -> {
-                    prime = numbers.remove(0);
-                    // log().info(prime + " is prime");
-                    System.out.println(prime + " is prime");
+                .matchEquals(Integer.class, p -> getContext().become(beforeNewPrime()))
+                .build();
+    }
 
-                    ActorRef nextPrimeActor;
+    private Receive beforeNewPrime() {
+        return receiveBuilder()
+                .match(Integer.class, p -> {
+                    // Not divisible by current prime
+                    if (p % currentPrime != 0) {
+                        manager.tell(new NewPrime(p), self());
 
-                    ArrayList<Integer> nextNumbers = new ArrayList<Integer>();
-
-                    // Find all non-multiples of prime within numbers
-                    // and add them to nextNumbers
-                    int i = 0;
-                    boolean sizeIncreasing = true;
-                    while (i < numbers.size() || sizeIncreasing) {
-                        sizeIncreasing = false;
-                        int size = numbers.size();
-
-                        if (numbers.get(i) % prime != 0) {
-                            nextNumbers.add(numbers.get(i));
+                        if (p > Math.sqrt(N)) {
+                            getContext().become(restArePrimes());
+                        } else {
+                            nextPrime = getContext().actorOf(PrimeActor.props(p, N, manager));
+                            getContext().become(afterNewPrime());
                         }
-                        if (nextNumbers.size() > 1) {
-                            // String name = "Prime-Actor-" + numbers.get(0);
-                            nextPrimeActor = getContext().actorOf(PrimeActor.props(nextNumbers));
-                            nextPrimeActor.tell("", ActorRef.noSender());
-                        }
-                        // Check if size has changed since the first call
-                        if (size < numbers.size()) {
-                            sizeIncreasing = true;
-                        }
-                        i++;
                     }
                 })
+                .match(SieveActors.End.class, foo -> {
+                    manager.tell(SieveActors.End.class, self());
+                })
                 .build();
+    }
 
+    private Receive restArePrimes() {
+        return receiveBuilder()
+                .match(Integer.class, p -> {
+                    if (p % currentPrime != 0) {
+                        // Send the number to next prime
+                        nextPrime.tell(p, self());
+                    }
+                })
+                .match(SieveActors.End.class, foo -> {
+                    // Received an End from the previous actor/prime
+                    // Notify the next actor/prime that no more numbers will be sent
+                    nextPrime.tell(SieveActors.End.class, self());
+                })
+                .build();
+    }
+
+    private Receive afterNewPrime() {
+        return receiveBuilder()
+                .match(Integer.class, p -> {
+                    if (p % currentPrime != 0) {
+                        // Updates manager about new prime
+                       manager.tell(new NewPrime(p), self());
+                    }
+                })
+                .match(SieveActors.End.class, foo -> {
+                    // last prime
+                    manager.tell(SieveActors.End.class, self());
+                })
+                .build();
     }
 }

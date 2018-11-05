@@ -1,5 +1,4 @@
 import java.io.IOException;
-import java.util.ArrayList;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
@@ -9,19 +8,23 @@ import akka.actor.Props;
  * Date: Nov 04, 2018
  */
 public class SieveActors {
+    static class Start {
+        public int num;
+
+        public Start(int num) {
+            this.num = num;
+        }
+    }
+
+    static class End{}
+
     public static void main(String[] args) throws IOException {
         final int n = 1000000;
-        ArrayList<Integer> numbers = generateNumbersTo(n);
-        ArrayList<Integer> primeNumbers = new ArrayList<>();
 
-        final ActorSystem sieveSystem = ActorSystem.create("SieveOFEratosthenes");
-        ActorRef[] actorRefs = new ActorRef[n];
+        final ActorSystem sieveSystem = ActorSystem.create("SieveOfEratosthenes");
 
-        // Smallest prime
-        int p = numbers.get(0);
-
-        actorRefs[p] = sieveSystem.actorOf(PrimeActor.props(numbers));
-        actorRefs[p].tell("", ActorRef.noSender());
+        ActorRef sManager = sieveSystem.actorOf(Props.create(SieveManager.class));
+        sManager.tell(new Start(n), ActorRef.noSender());
 
         System.out.println(">>> Press ENTER to exit <<<");
 
@@ -31,13 +34,5 @@ public class SieveActors {
             sieveSystem.terminate();
         }
 
-    }
-
-    private static ArrayList<Integer> generateNumbersTo(int lastInt) {
-        ArrayList<Integer> temp = new ArrayList<>();
-        for (int i = 2; i <= lastInt; i++) {
-            temp.add(i);
-        }
-        return temp;
     }
 }
