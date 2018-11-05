@@ -35,7 +35,7 @@ public class SieveOneThread {
 
         long timeOut = System.nanoTime() - timeIn;
 
-        System.out.printf("Time for 1 Thread: %.2f (ms)", timeOut * 1e-6);  // Time for 1 Thread: 694864.94 (ms)
+        System.out.printf("Time for 1 Thread: %.2f (ms)", timeOut * 1e-6);  // Time for 1 Thread: 688.89 (ms)
     }
 
     private static ArrayList<Integer> generateNumbersTo(int lastInt) {

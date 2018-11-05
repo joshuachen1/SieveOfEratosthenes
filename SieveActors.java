@@ -35,7 +35,7 @@ public class SieveActors {
 
         } finally {
             sieveSystem.terminate();
-            System.out.printf("Time for Sieve Actors: %.2f (ms)", timeOut * 1e-6);
+            System.out.printf("Time for Sieve Actors: %.2f (ms)", timeOut * 1e-6);  // Time for Sieve Actors: 0.68 (ms)
         }
     }
 }
