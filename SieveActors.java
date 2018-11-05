@@ -1,11 +1,11 @@
-import java.io.IOException;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.actor.Props;
+
+import java.io.IOException;
 
 /**
  * @author Joshua Chen
- * Date: Nov 04, 2018
+ *         Date: Nov 05, 2018
  */
 public class SieveActors {
     static class Start {
@@ -15,24 +15,20 @@ public class SieveActors {
             this.num = num;
         }
     }
-
-    static class End{}
-
-    public static void main(String[] args) throws IOException {
-        final int n = 1000000;
-
+    public static void main(String[] args) {
         final ActorSystem sieveSystem = ActorSystem.create("SieveOfEratosthenes");
+        final int N = 100;
 
-        ActorRef sManager = sieveSystem.actorOf(Props.create(SieveManager.class));
-        sManager.tell(new Start(n), ActorRef.noSender());
-
-        System.out.println(">>> Press ENTER to exit <<<");
+        ActorRef sManager = sieveSystem.actorOf(SieveManager.props(), "Manager");
 
         try {
+            sManager.tell(new Start(N), ActorRef.noSender());
+            System.out.println("Press Enter to End Program");
             System.in.read();
+        } catch (IOException e) {
+
         } finally {
             sieveSystem.terminate();
         }
-
     }
 }
