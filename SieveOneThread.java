@@ -11,18 +11,22 @@ public class SieveOneThread {
 
         long timeIn = System.nanoTime();
 
+        // Initialize all numbers from 2 to n to true
         for (int i = 2; i <= n; i++) {
             isPrime[i] = true;
         }
 
-        for (int i = 0; i*i <= n; i++) {
+        // Check primes under the square root of n
+        for (int i = 0; (i * i) <= n; i++) {
             if (isPrime[i]) {
-                for (int j = i; i*j <= n; j++) {
-                    isPrime[i * j] = false;
+                // Mark all multiples of the prime
+                for (int multipleOfI = i; (i * multipleOfI) <= n; multipleOfI++) {
+                    isPrime[i * multipleOfI] = false;
                 }
             }
         }
 
+        // Display all primes from 2 to n
         for (int i = 2; i <= n; i++) {
             if (isPrime[i]) {
                 System.out.println(i);
