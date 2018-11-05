@@ -1,9 +1,11 @@
 import akka.actor.*;
-import scala.Int;
 
 /**
  * @author Joshua Chen
- *         Date: Nov 04, 2018
+ * Date: Nov 04, 2018
+ *
+ * Marks multiples of the LocalPrime as false.
+ * Creates new PrimeActors when it is half way through sieving through the first half of the array of numbers.
  */
 public class PrimeActor extends AbstractLoggingActor {
 

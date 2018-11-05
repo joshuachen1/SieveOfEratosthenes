@@ -2,10 +2,12 @@ import akka.actor.AbstractActor;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 
-
 /**
  * @author Joshua Chen
  * Date: Nov 05, 2018
+ *
+ * Keeps track of the boolean array of prime numbers.
+ * Starts the sieving at smallest prime: 2 to N.
  */
 public class SieveManager extends AbstractActor {
 
@@ -15,7 +17,6 @@ public class SieveManager extends AbstractActor {
 
     private boolean[] isPrime;
     private int N;
-    private long timeIn, timeOut;
 
     @Override
     public Receive createReceive() {
@@ -25,7 +26,6 @@ public class SieveManager extends AbstractActor {
 
                     this.isPrime = new boolean[N + 1];
 
-                    timeIn = System.nanoTime();
                     for (int i = 2; i <= N; i++) {
                         isPrime[i] = true;
                     }

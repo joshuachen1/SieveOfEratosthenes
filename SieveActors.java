@@ -5,7 +5,10 @@ import java.io.IOException;
 
 /**
  * @author Joshua Chen
- *         Date: Nov 05, 2018
+ * Date: Nov 05, 2018
+ *
+ * Main Class that runs the Actor System.
+ * Terminates Actor System when Enter Key is pressed.
  */
 public class SieveActors {
     static class Start {
