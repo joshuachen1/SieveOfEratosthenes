@@ -7,21 +7,28 @@ public class SieveOneThread {
     public static void main(String[] args) {
 
         final int n = 1000000;
-        ArrayList<Integer> numbers = generateNumbersTo(n);
+        boolean[] isPrime = new boolean[n + 1];
 
         long timeIn = System.nanoTime();
-        while (numbers.size() > 0) {
-            // Smallest prime
-            int p = numbers.get(0);
-            System.out.println(p);
 
-            // Find all multiples of p within numbers and remove them
-            for (int i = 0; i < numbers.size(); i++) {
-                if (numbers.get(i) % p == 0) {
-                    numbers.remove(numbers.get(i));
+        for (int i = 2; i <= n; i++) {
+            isPrime[i] = true;
+        }
+
+        for (int i = 0; i*i <= n; i++) {
+            if (isPrime[i]) {
+                for (int j = i; i*j <= n; j++) {
+                    isPrime[i * j] = false;
                 }
             }
         }
+
+        for (int i = 2; i <= n; i++) {
+            if (isPrime[i]) {
+                System.out.println(i);
+            }
+        }
+
         long timeOut = System.nanoTime() - timeIn;
 
         System.out.printf("Time for 1 Thread: %.2f (ms)", timeOut * 1e-6);  // Time for 1 Thread: 694864.94 (ms)

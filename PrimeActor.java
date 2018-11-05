@@ -1,78 +1,70 @@
 import akka.actor.*;
+import scala.Int;
 
 /**
  * @author Joshua Chen
  *         Date: Nov 04, 2018
  */
-public class PrimeActor extends AbstractActor {
+public class PrimeActor extends AbstractLoggingActor {
 
-    static public Props props(int currentPrime, int N, ActorRef manager) {
-        return Props.create(PrimeActor.class, () -> new PrimeActor(currentPrime, N, manager));
+    static public Props props(boolean[] isPrime, int localPrime, int N, ActorRef manager) {
+        return Props.create(PrimeActor.class, () -> new PrimeActor(isPrime, localPrime, N, manager));
     }
 
+    static class Begin {}
     static class End{}
 
-    private int currentPrime;
+    private boolean[] isPrime;
+    private int localPrime;
     private int N;
     private ActorRef manager;
-    private ActorRef nextPrime;
-    private boolean needNextPrime;
 
-    public PrimeActor(int currentPrime, int n, ActorRef manager) {
-        this.currentPrime = currentPrime;
-        N = n;
+
+    public PrimeActor(boolean[] isPrime, int localPrime, int N, ActorRef manager) {
+        this.isPrime = isPrime;
+        this.localPrime = localPrime;
+        this.N = N;
         this.manager = manager;
-        this.nextPrime = null;
-        needNextPrime = true;
     }
 
     @Override
     public Receive createReceive() {
         return receiveBuilder()
-                .match(Integer.class, num -> {
-                    int p = num;
+                .match(Begin.class, num -> {
+                    boolean nextActorBegins = false;
 
-                    if (p > Math.sqrt(N)) {
-                        getContext().become(receiveBuilder()
-                                .match(Integer.class, RemainingPrime -> {
-                                    // Updates manager about new prime
-                                    if (p % currentPrime != 0) {
-                                        manager.tell(new SieveManager.NewPrime(p), ActorRef.noSender());
-                                    }
-                                    getContext().unbecome();
-                                })
-                                // last prime
-                                .match(End.class, lastPrime -> {
-                                    manager.tell(new End(), ActorRef.noSender());
-                                    getContext().unbecome();
-                                })
-                                .build());
-                    } else {
-                        if (needNextPrime) {
-                            nextPrime = getContext().actorOf(PrimeActor.props(p, N, manager));
-                            manager.tell(new SieveManager.NewPrime(p), ActorRef.noSender());
-                            needNextPrime = false;
+                    if (localPrime > Math.sqrt(N)) {
+                        for (int i = localPrime; i <= N; i++) {
+                            if (isPrime[i]) {
+                                System.out.println(i + " is prime.");
+                            }
                         }
-                        getContext().become(receiveBuilder()
-                                .match(Integer.class, AfterPrime -> {
-                                    // Forward next num to next prime
-                                    if (p % currentPrime != 0) {
-                                        nextPrime.tell(num, ActorRef.noSender());
-                                    }
-                                    getContext().unbecome();
-                                })
-                                // Received an End from the previous actor/prime
-                                // Notify the next actor/prime that no more numbers will be sent
-                                .match(End.class, endOfNums -> {
-                                    nextPrime.tell(new End(), ActorRef.noSender());
-                                    getContext().unbecome();
-                                })
-                                .build());
+                        manager.tell(new PrimeActor.End(), ActorRef.noSender());
                     }
-                })
-                .match(End.class, foo -> {
-                    manager.tell(new End(), ActorRef.noSender());
-                })
-                .build();
+
+                    else if (localPrime != -1) {
+                        for (int j = localPrime; localPrime * j <= N; j++) {
+                            isPrime[localPrime * j] = false;
+
+                            // Begins when half way through list
+                            if (!nextActorBegins && localPrime * j >= N / 2) {
+                                ActorRef nextActor = getContext().actorOf(PrimeActor.props(isPrime, getNextLocalPrime(localPrime), N, manager));
+                                nextActor.tell(new Begin(), ActorRef.noSender());
+                                nextActorBegins = true;
+                            }
+                        }
+                    }
+
+
+                }).build();
+    }
+
+    private int getNextLocalPrime(int currentLocalPrime) {
+        for (int i = currentLocalPrime + 1; i <= N; i++) {
+            if (isPrime[i]) {
+                return i;
+            }
+        }
+        return -1;
     }
 }
