@@ -5,19 +5,12 @@ import java.io.IOException;
 
 /**
  * @author Joshua Chen
- * Date: Nov 05, 2018
- *
- * Main Class that runs the Actor System.
- * Terminates Actor System when Enter Key is pressed.
+ *         Date: Nov 05, 2018
+ *         <p>
+ *         Main Class that runs the Actor System.
+ *         Terminates Actor System when Enter Key is pressed.
  */
 public class SieveActors {
-    static class Start {
-        public int num;
-
-        public Start(int num) {
-            this.num = num;
-        }
-    }
     public static void main(String[] args) {
         final ActorSystem sieveSystem = ActorSystem.create("SieveOfEratosthenes");
         final int N = 1_000_000;
@@ -36,6 +29,14 @@ public class SieveActors {
         } finally {
             sieveSystem.terminate();
             System.out.printf("Time for Sieve Actors: %.2f (ms)", timeOut * 1e-6);  // Time for Sieve Actors: 0.68 (ms)
+        }
+    }
+
+    static class Start {
+        public int num;
+
+        public Start(int num) {
+            this.num = num;
         }
     }
 }

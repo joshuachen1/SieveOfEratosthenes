@@ -1,7 +1,8 @@
 import java.util.ArrayList;
+
 /**
  * @author Joshua Chen
- * Date: Nov 03, 2018
+ *         Date: Nov 03, 2018
  */
 public class SieveOneThread {
     public static void main(String[] args) {

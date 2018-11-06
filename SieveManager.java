@@ -4,19 +4,19 @@ import akka.actor.Props;
 
 /**
  * @author Joshua Chen
- * Date: Nov 05, 2018
- *
- * Keeps track of the boolean array of prime numbers.
- * Starts the sieving at smallest prime: 2 to N.
+ *         Date: Nov 05, 2018
+ *         <p>
+ *         Keeps track of the boolean array of prime numbers.
+ *         Starts the sieving at smallest prime: 2 to N.
  */
 public class SieveManager extends AbstractActor {
+
+    private boolean[] isPrime;
+    private int N;
 
     static public Props props() {
         return Props.create(SieveManager.class, () -> new SieveManager());
     }
-
-    private boolean[] isPrime;
-    private int N;
 
     @Override
     public Receive createReceive() {

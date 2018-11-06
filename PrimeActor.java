@@ -1,32 +1,29 @@
-import akka.actor.*;
+import akka.actor.AbstractLoggingActor;
+import akka.actor.ActorRef;
+import akka.actor.Props;
 
 /**
  * @author Joshua Chen
- * Date: Nov 04, 2018
- *
- * Marks multiples of the LocalPrime as false.
- * Creates new PrimeActors when it is half way through sieving through the first half of the array of numbers.
+ *         Date: Nov 04, 2018
+ *         <p>
+ *         Marks multiples of the LocalPrime as false.
+ *         Creates new PrimeActors when it is half way through sieving through the first half of the array of numbers.
  */
 public class PrimeActor extends AbstractLoggingActor {
-
-    static public Props props(boolean[] isPrime, int localPrime, int N, ActorRef manager) {
-        return Props.create(PrimeActor.class, () -> new PrimeActor(isPrime, localPrime, N, manager));
-    }
-
-    static class Begin {}
-    static class End{}
 
     private boolean[] isPrime;
     private int localPrime;
     private int N;
     private ActorRef manager;
-
-
     public PrimeActor(boolean[] isPrime, int localPrime, int N, ActorRef manager) {
         this.isPrime = isPrime;
         this.localPrime = localPrime;
         this.N = N;
         this.manager = manager;
+    }
+
+    static public Props props(boolean[] isPrime, int localPrime, int N, ActorRef manager) {
+        return Props.create(PrimeActor.class, () -> new PrimeActor(isPrime, localPrime, N, manager));
     }
 
     @Override
@@ -42,9 +39,7 @@ public class PrimeActor extends AbstractLoggingActor {
                             }
                         }
                         manager.tell(new PrimeActor.End(), ActorRef.noSender());
-                    }
-
-                    else if (localPrime != -1) {
+                    } else if (localPrime != -1) {
                         for (int j = localPrime; localPrime * j <= N; j++) {
                             isPrime[localPrime * j] = false;
 
@@ -68,5 +63,11 @@ public class PrimeActor extends AbstractLoggingActor {
             }
         }
         return -1;
+    }
+
+    static class Begin {
+    }
+
+    static class End {
     }
 }
